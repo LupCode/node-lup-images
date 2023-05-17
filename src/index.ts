@@ -1,65 +1,56 @@
-let _MAIN = __filename.replace(/\\/g, '/'); // '\' -> '/'
-let _ROOT = __dirname.replace(/\\/g, '/'); // '\' -> '/'
+import ImageOptimizer from "./ImageOptimizer";
+import ImageRequestHandler from "./ImageRequestHandler";
+import OptimizedImage from "./OptimizedImage";
 
-const COMMON_BUILD_DIRECTORIES = ['/bin', '/.bin', '/build', '/out', '/target'];
-
-const originalStackTraceLimit = Error.stackTraceLimit;
-Error.stackTraceLimit = Infinity;
-try {
-  throw new Error();
-} catch (ex: any) {
-  const lines = ex.stack.toString().split('\n');
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const line = lines[i].trim();
-    let start = line.indexOf('(');
-    if (start < 0) continue;
-    start++;
-    let end = line.indexOf(')', start);
-    if (!end) continue;
-    let path = line.substring(start, end).trim().replace(/\\/g, '/'); // '\' -> '/'
-    if (
-      path.length === 0 ||
-      path.startsWith('internal/modules/') ||
-      path.startsWith('node:') ||
-      path.lastIndexOf('/.next/server/') >= 0
-    )
-      continue;
-
-    // remove line and column numbers at end
-    for (let j = 0; j < 2; j++) {
-      end = path.lastIndexOf(':');
-      if (end < 0) break;
-      path = path.substring(0, end);
-    }
-
-    if (path === _MAIN) continue;
-
-    _MAIN = path;
-    end = path.lastIndexOf('/node_modules/');
-    end = end < 0 ? path.lastIndexOf('/') : end;
-    _ROOT = end > 0 ? path.substring(0, end + 1) : path;
-    _ROOT = _ROOT.endsWith('/') ? _ROOT.substring(0, _ROOT.length - 1) : _ROOT;
-
-    // strip common build directories
-    for (const buildDir of COMMON_BUILD_DIRECTORIES) {
-      if (_ROOT.endsWith(buildDir)) {
-        _ROOT = _ROOT.substring(0, _ROOT.length - buildDir.length);
-        break;
-      }
-    }
-
-    break;
-  }
+export {
+    ImageOptimizer,
+    ImageRequestHandler,
+    OptimizedImage,
 }
-Error.stackTraceLimit = originalStackTraceLimit;
 
-/** Absolute path to the main file  */
-export const MAIN = _MAIN;
+export let DEFAULT_HTTP_CACHE_SEC = 3600; // 1 day
+export let DEFAULT_CACHE_DIRECTORY_PATH = "./cache";
+export let DEFAULT_MAX_CACHE_SIZE_MB = 1000; // 1GB
+export let DEFAULT_MIN_IMAGE_WIDTH = 32;
+export let DEFAULT_MAX_IMAGE_WIDTH = 4096; // 4K
+export let DEFAULT_SCALE_FACTOR = 1.5;
 
-/** Absolte path to root directory in which main file is located (never ends with '/' or '\\') */
-export const ROOT = _ROOT;
-
-export default {
-  MAIN,
-  ROOT,
+export let FILE_EXTENSION_TO_MIME_TYPE: {[key: string]: string} = {
+    "avif": "image/avif",
+    "jpg": "image/jpeg",
+    "webp": "image/webp",
+    "png": "image/png",
+    "gif": "image/gif",
+    "svg": "image/svg+xml",
+    "ico": "image/x-icon",
+    "tiff": "image/tiff",
+    "tif": "image/tiff",
+    "heif": "image/heif",
 };
+export let FILE_EXTENSION_TO_ALTERNATIVES: {[key: string]: string[]} = {
+    "avif": ["webp", "png"],
+    "jpg": ["avif", "webp"],
+    "webp": ["avif", "png"],
+    "png": ["avif", "webp"],
+    "gif": [],
+    "svg": [],
+    "ico": ["avif", "webp", "png"],
+    "tiff": ["avif", "webp", "png"],
+    "tif": ["avif", "webp", "png"],
+};
+
+const LupImage = {
+    DEFAULT_HTTP_CACHE_SEC,
+    DEFAULT_CACHE_DIRECTORY_PATH,
+    DEFAULT_MAX_CACHE_SIZE_MB,
+    DEFAULT_MIN_IMAGE_WIDTH,
+    DEFAULT_MAX_IMAGE_WIDTH,
+    DEFAULT_SCALE_FACTOR,
+    FILE_EXTENSION_TO_MIME_TYPE,
+    FILE_EXTENSION_TO_ALTERNATIVES,
+
+    ImageOptimizer,
+    ImageRequestHandler,
+    OptimizedImage,
+};
+export default LupImage;
