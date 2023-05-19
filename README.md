@@ -7,7 +7,7 @@
 Node module for optimizing images in web applications.
 
 ## Example
-```typescript
+```javascript
 const { ImagesRequestHandler } = require('lup-images');
 const express = require('express');
 

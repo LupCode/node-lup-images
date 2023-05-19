@@ -95,6 +95,8 @@ class ImageOptimizer {
     async optimizedImage(filePath: string, width: number, format: 'avif' | 'webp' | 'jpg' | 'png' | 'gif' | 'heif' | 'tiff' | 'tif'): Promise<OptimizedImageInfo> {
         width = Math.max(this.#minImageWidth, Math.min(width, this.#maxImageWidth));
 
+        const originalFileInfo = await fs.stat(filePath); // check if file exists and for caching get last modified time
+
         let cacheFile = '';
         if(this.#cacheDir){
             cacheFile = path.resolve(
@@ -104,81 +106,82 @@ class ImageOptimizer {
 
             // look in cache for image
             try {
-                const imageData = await fs.readFile(cacheFile);
-                return {imageData, format, mimeType: (FILE_EXTENSION_TO_MIME_TYPE[format] || 'image/'+format) };
+                const cachedFileInfo = await fs.stat(cacheFile);
+                if(cachedFileInfo.mtime >= originalFileInfo.mtime){
+                    const imageData = await fs.readFile(cacheFile);
+                    return {imageData, format, mimeType: (FILE_EXTENSION_TO_MIME_TYPE[format] || 'image/'+format) };
+                }
             } catch (ex){ }
         }
         
     
         // generate optimized image
-        return fs.stat(filePath).then(async () => {
-            let info: OptimizedImageInfo | null = null;
-            let img = sharp(filePath).rotate(); // fix EXIF rotation
-            const meta = await img.metadata().catch(() => null);
-            const needResize = !meta || !meta.width || meta.width > width;
-            img = needResize ? img.resize(width) : img; // resize
+        let info: OptimizedImageInfo | null = null;
+        let img = sharp(filePath).rotate(); // fix EXIF rotation
+        const meta = await img.metadata().catch(() => null);
+        const needResize = !meta || !meta.width || meta.width > width;
+        img = needResize ? img.resize(width) : img; // resize
+        
+        switch(format){
+
+            case 'avif':
+                info = await img.avif().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/avif'} as OptimizedImageInfo;
+                });
+                break;
+
+            case 'webp':
+                info = await img.webp().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/jpg'} as OptimizedImageInfo;
+                });
+                break;
+
+            case 'jpg':
+                info = await img.jpeg().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/jpg'} as OptimizedImageInfo;
+                });
+                break;
             
-            switch(format){
+            case 'png':
+                info = await img.png().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/png'} as OptimizedImageInfo;
+                });
+                break;
 
-                case 'avif':
-                    info = await img.avif().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/avif'} as OptimizedImageInfo;
-                    });
-                    break;
+            case 'gif':
+                info = await img.gif().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/gif'} as OptimizedImageInfo;
+                });
+                break;
 
-                case 'webp':
-                    info = await img.webp().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/jpg'} as OptimizedImageInfo;
-                    });
-                    break;
+            case 'heif':
+                info = await img.heif().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/gif'} as OptimizedImageInfo;
+                });
+                break;
 
-                case 'jpg':
-                    info = await img.jpeg().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/jpg'} as OptimizedImageInfo;
-                    });
-                    break;
-                
-                case 'png':
-                    info = await img.png().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/png'} as OptimizedImageInfo;
-                    });
-                    break;
-
-                case 'gif':
-                    info = await img.gif().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/gif'} as OptimizedImageInfo;
-                    });
-                    break;
-
-                case 'heif':
-                    info = await img.heif().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/gif'} as OptimizedImageInfo;
-                    });
-                    break;
-
-                case 'tiff':
-                case 'tif':
-                    info = await img.tiff().toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/gif'} as OptimizedImageInfo;
-                    });
-                    break;
-                
-                default:
-                    info = await img.toBuffer().then((imageData: Buffer) => {
-                        return {imageData, format, mimeType: 'image/'+format} as OptimizedImageInfo;
-                    });
-            }
+            case 'tiff':
+            case 'tif':
+                info = await img.tiff().toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/gif'} as OptimizedImageInfo;
+                });
+                break;
             
-            if(!info) throw new Error("Image could not be optimized");
-    
-            // store optimized image in cache
-            if(this.#cacheDir){
-                await fs.mkdir(this.#cacheDir, {recursive: true}).then(() => fs.writeFile(cacheFile, info?.imageData || Buffer.alloc(0)));
-                this.cleanUpCache();
-            }
-            
-            return info;
-        });
+            default:
+                info = await img.toBuffer().then((imageData: Buffer) => {
+                    return {imageData, format, mimeType: 'image/'+format} as OptimizedImageInfo;
+                });
+        }
+        
+        if(!info) throw new Error("Image could not be optimized");
+
+        // store optimized image in cache
+        if(this.#cacheDir){
+            await fs.mkdir(this.#cacheDir, {recursive: true}).then(() => fs.writeFile(cacheFile, info?.imageData || Buffer.alloc(0)));
+            this.cleanUpCache();
+        }
+        
+        return info;
     }
 }
 export default ImageOptimizer;

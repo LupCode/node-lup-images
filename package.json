@@ -1,6 +1,6 @@
 {
   "name": "lup-images",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Optimizes images for web applications",
   "files": [
     "lib/**/*"
