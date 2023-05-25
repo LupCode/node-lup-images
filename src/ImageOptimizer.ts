@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import { ROOT } from "lup-root";
 import { Stats } from "fs";
-import { DEFAULT_CACHE_DIRECTORY_PATH, DEFAULT_MAX_CACHE_SIZE_MB, DEFAULT_MAX_IMAGE_WIDTH, DEFAULT_MIN_IMAGE_WIDTH, FILE_EXTENSION_TO_MIME_TYPE } from ".";
+import { OptimizerSettings } from "./index";
 
 export type OptimizedImageInfo = {
     imageData: Buffer,
@@ -37,17 +37,17 @@ export type ImageOptimizerOptions = {
     maxImageWidth?: number,
 };
 
-class ImageOptimizer {
-    readonly #cacheDir: string | null;
-    readonly #cacheSize: number; // byte size
-    readonly #minImageWidth: number;
-    readonly #maxImageWidth: number;
+export class ImageOptimizer {
+    readonly cacheDir: string | null;
+    readonly cacheSize: number; // byte size
+    readonly minImageWidth: number;
+    readonly maxImageWidth: number;
 
     constructor(options: ImageOptimizerOptions = {}){
-        this.#cacheDir = options.cacheDir != null ? path.resolve(ROOT, options.cacheDir || DEFAULT_CACHE_DIRECTORY_PATH) : null;
-        this.#cacheSize = (options.cacheSize || DEFAULT_MAX_CACHE_SIZE_MB) * 1000000;
-        this.#minImageWidth = options.minImageWidth || DEFAULT_MIN_IMAGE_WIDTH;
-        this.#maxImageWidth = options.maxImageWidth || DEFAULT_MAX_IMAGE_WIDTH;
+        this.cacheDir = options.cacheDir != null ? path.resolve(ROOT, options.cacheDir || OptimizerSettings.DEFAULT_CACHE_DIRECTORY_PATH) : null;
+        this.cacheSize = (options.cacheSize || OptimizerSettings.DEFAULT_MAX_CACHE_SIZE_MB) * 1000000;
+        this.minImageWidth = options.minImageWidth || OptimizerSettings.DEFAULT_MIN_IMAGE_WIDTH;
+        this.maxImageWidth = options.maxImageWidth || OptimizerSettings.DEFAULT_MAX_IMAGE_WIDTH;
     }
 
     /**
@@ -56,13 +56,13 @@ class ImageOptimizer {
      * By default this is called automatically when a new image is stored in the cache.
      */
     async cleanUpCache(){
-        if(!this.#cacheDir) return;
+        if(!this.cacheDir) return;
         const promises: Promise<void>[] = [];
         const oldestFiles: {[key: number]: {filePath: string, size: number}} = {};
         let dirSize = 0;
-        fs.readdir(this.#cacheDir).then(async (files: string[]) => {
+        fs.readdir(this.cacheDir).then(async (files: string[]) => {
             for(const file of files){
-                const filePath = path.resolve(this.#cacheDir as string, file);
+                const filePath = path.resolve(this.cacheDir as string, file);
                 promises.push(fs.stat(filePath).then((stats: Stats) => {
                     let time = stats.atimeMs; // access time
                     while(oldestFiles[time]) time++;
@@ -75,7 +75,7 @@ class ImageOptimizer {
     
             // delete files until cache size is under limit again
             const keys = Object.keys(oldestFiles).sort();
-            while(dirSize > this.#cacheSize && keys.length > 0){
+            while(dirSize > this.cacheSize && keys.length > 0){
                 const key = keys.splice(0, 1)[0];
                 const {filePath, size} = oldestFiles[key as any];
                 dirSize = dirSize - size;
@@ -93,14 +93,14 @@ class ImageOptimizer {
      * @returns Promise that resolves to an object containing the image data, format and mime type.
      */
     async optimizedImage(filePath: string, width: number, format: 'avif' | 'webp' | 'jpg' | 'png' | 'gif' | 'heif' | 'tiff' | 'tif'): Promise<OptimizedImageInfo> {
-        width = Math.max(this.#minImageWidth, Math.min(width, this.#maxImageWidth));
+        width = Math.max(this.minImageWidth, Math.min(width, this.maxImageWidth));
 
         const originalFileInfo = await fs.stat(filePath); // check if file exists and for caching get last modified time
 
         let cacheFile = '';
-        if(this.#cacheDir){
+        if(this.cacheDir){
             cacheFile = path.resolve(
-                this.#cacheDir, 
+                this.cacheDir, 
                 filePath.substring(ROOT.length+1).replaceAll('\\', '--').replaceAll('/', '--')+'-'+width+'w.'+format
             );
 
@@ -109,7 +109,7 @@ class ImageOptimizer {
                 const cachedFileInfo = await fs.stat(cacheFile);
                 if(cachedFileInfo.mtime >= originalFileInfo.mtime){
                     const imageData = await fs.readFile(cacheFile);
-                    return {imageData, format, mimeType: (FILE_EXTENSION_TO_MIME_TYPE[format] || 'image/'+format) };
+                    return {imageData, format, mimeType: (OptimizerSettings.FILE_EXTENSION_TO_MIME_TYPE[format] || 'image/'+format) };
                 }
             } catch (ex){ }
         }
@@ -176,8 +176,8 @@ class ImageOptimizer {
         if(!info) throw new Error("Image could not be optimized");
 
         // store optimized image in cache
-        if(this.#cacheDir){
-            await fs.mkdir(this.#cacheDir, {recursive: true}).then(() => fs.writeFile(cacheFile, info?.imageData || Buffer.alloc(0)));
+        if(this.cacheDir){
+            await fs.mkdir(this.cacheDir, {recursive: true}).then(() => fs.writeFile(cacheFile, info?.imageData || Buffer.alloc(0)));
             this.cleanUpCache();
         }
         

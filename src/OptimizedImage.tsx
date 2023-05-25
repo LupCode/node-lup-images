@@ -1,5 +1,5 @@
 import React from "react";
-import { DEFAULT_MIN_IMAGE_WIDTH, DEFAULT_SCALE_FACTOR, FILE_EXTENSION_TO_ALTERNATIVES, FILE_EXTENSION_TO_MIME_TYPE } from ".";
+import { OptimizerSettings } from "./index";
 
 export type OptimizedImageProps = {
     src: string,
@@ -34,20 +34,20 @@ export type OptimizedImageProps = {
     alternativeFileExtensions?: string[],
 };
 
-export default function OptimizedImage(props: OptimizedImageProps){
+export function OptimizedImage(props: OptimizedImageProps){
     if(!props.src) throw new Error("src must be provided");
     const width = parseInt(props.width as string || "0", 10);
     if(!width) throw new Error("width must be provided as pixel value");
     
-    const minWidth = props.minWidth || DEFAULT_MIN_IMAGE_WIDTH;
-    let scaleFactor = props.scaleFactor || DEFAULT_SCALE_FACTOR;
+    const minWidth = props.minWidth || OptimizerSettings.DEFAULT_MIN_IMAGE_WIDTH;
+    let scaleFactor = props.scaleFactor || OptimizerSettings.DEFAULT_SCALE_FACTOR;
     scaleFactor = scaleFactor > 1 ? 1/scaleFactor : scaleFactor;
 
     const endIdx = props.src.lastIndexOf('?');
     const srcPath = props.src.substring(0, endIdx < 0 ? props.src.length : endIdx); // src without query
 
     const fileExtension = srcPath.substring(srcPath.lastIndexOf('.')+1);
-    const fileExtensions = props.alternativeFileExtensions || FILE_EXTENSION_TO_ALTERNATIVES[fileExtension] || [];
+    const fileExtensions = props.alternativeFileExtensions || OptimizerSettings.FILE_EXTENSION_TO_ALTERNATIVES[fileExtension] || [];
     if(!fileExtensions.includes(fileExtension)) fileExtensions.push(fileExtension);
     
     const sources: React.ReactNode[] = [];
@@ -56,7 +56,7 @@ export default function OptimizedImage(props: OptimizedImageProps){
         const newW = Math.floor(w * scaleFactor);
         const isLast = newW < minWidth;
         for(const fe of fileExtensions) sources.push(
-            <source key={w+fe} type={FILE_EXTENSION_TO_MIME_TYPE[fe] || 'image/'+fe} 
+            <source key={w+fe} type={OptimizerSettings.FILE_EXTENSION_TO_MIME_TYPE[fe] || 'image/'+fe} 
                     srcSet={srcPath+'?w='+w+'&f='+fe} media={isLast ? undefined : '(min-width: '+w+'px)'} />
         );
         w = newW;
@@ -68,3 +68,4 @@ export default function OptimizedImage(props: OptimizedImageProps){
                     alt={props.alt} draggable={props.draggable} title={props.title} loading={props.loading} />
     </picture>;
 }
+export default OptimizedImage;

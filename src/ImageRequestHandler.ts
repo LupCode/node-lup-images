@@ -1,8 +1,8 @@
 import path from "path";
 import { ROOT } from "lup-root";
 import { NextFunction, Request, Response } from "express";
-import ImageOptimizer, { ImageOptimizerOptions, OptimizedImageInfo } from "./ImageOptimizer";
-import { DEFAULT_HTTP_CACHE_SEC } from ".";
+import { ImageOptimizer, ImageOptimizerOptions, OptimizedImageInfo } from "./ImageOptimizer";
+import { OptimizerSettings } from "./index";
 
 
 export type ImageRequestHandlerOptions = ImageOptimizerOptions & {
@@ -28,9 +28,9 @@ export type ImageRequestHandlerOptions = ImageOptimizerOptions & {
  * @param options Options for image optimization
  * @returns Request handler that can be passed e.g. to express
  */
-export default function ImageRequestHandler(options : ImageRequestHandlerOptions){
+export function ImageRequestHandler(options : ImageRequestHandlerOptions){
     const optimizer = new ImageOptimizer(options);
-    const httpCacheSec = options.httpCacheTime != null ? options.httpCacheTime || DEFAULT_HTTP_CACHE_SEC : null;
+    const httpCacheSec = options.httpCacheTime != null ? options.httpCacheTime || OptimizerSettings.DEFAULT_HTTP_CACHE_SEC : null;
 
     return (req: Request, res: Response, next: NextFunction) => {
         const filePath = path.resolve(ROOT, options.srcDir, req.params.fileName);
@@ -48,3 +48,4 @@ export default function ImageRequestHandler(options : ImageRequestHandlerOptions
         }).catch((err: any) => { console.error(err); next(); });
     };
 };
+export default ImageRequestHandler;
