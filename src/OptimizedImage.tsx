@@ -13,7 +13,15 @@ export type OptimizedImageProps = {
     loading?: "lazy" | "eager",
 
     /** 
-     * Min width image alternatives can have (image is provided in multiple widths for different devices).
+     * The image is automatically scaled based on the device pixel ratio (DPR) of the device.
+     * However if your image e.g. an ultra wide image and you you set object-fit cover e.g. the 
+     * image may seen blurry on high resolution devices. In this case you can set this prop to true
+     * which will serve images always with a bit higher resolution.
+     */
+    extraHighResolution?: boolean,
+
+    /** 
+     * Min width the scaled image data should always have (image is provided in multiple widths for different devices).
      * Default value is 32 (DEFAULT_MIN_IMAGE_WIDTH)
      */
     minWidth?: number,
@@ -57,7 +65,8 @@ export function OptimizedImage(props: OptimizedImageProps){
         const isLast = newW < minWidth;
         for(const fe of fileExtensions) sources.push(
             <source key={w+fe} type={OptimizerSettings.FILE_EXTENSION_TO_MIME_TYPE[fe] || 'image/'+fe} 
-                    srcSet={srcPath+'?w='+w+'&f='+fe} media={isLast ? undefined : '(min-width: '+w+'px)'} />
+                    srcSet={srcPath+'?w='+w+'&f='+fe} 
+                    media={isLast ? undefined : '(min-width: '+(props.extraHighResolution ? w/2 : w)+'px)'} />
         );
         w = newW;
     } while(w >= minWidth);

@@ -17,7 +17,7 @@ export type ImageRequestHandlerOptions = ImageOptimizerOptions & {
      * Can be undefined or null to disable public HTTP caching.
      * Defaults to 3600 (1 hour).
      */
-    httpCacheTime?: number | null
+    httpCacheTime?: number | null,
 };
 
 /**
