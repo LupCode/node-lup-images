@@ -1,0 +1,9 @@
+{
+    "transform": {
+        "^.+\\.(t|j)sx?$": "babel-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?|mts?|ts?)$",
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "mts", "mjs", "cjs", "json", "node"],
+    "moduleDirectories": ["node_modules", "src"],
+    "collectCoverage":true
+}

@@ -33,7 +33,9 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
     const httpCacheSec = options.httpCacheTime != null ? options.httpCacheTime || OptimizerSettings.DEFAULT_HTTP_CACHE_SEC : null;
 
     return (req: Request, res: Response, next: NextFunction) => {
-        const filePath = path.resolve(ROOT, options.srcDir, req.params.fileName);
+        const fileName = req.url.substring(options.uriPrefix.length);
+        console.log("FILENAME:", fileName); // TODO REMOVE
+        const filePath = path.resolve(ROOT, options.srcDir, fileName);
         let width = req.query.w ? parseInt(req.query.w as string || '', 10) : null;
         width = width || 1024;
         let format = req.query.f as string || '';
