@@ -33,21 +33,25 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
     const httpCacheSec = options.httpCacheTime != null ? options.httpCacheTime || OptimizerSettings.DEFAULT_HTTP_CACHE_SEC : null;
 
     return (req: Request, res: Response, next: NextFunction) => {
-        const fileName = req.url.substring(options.uriPrefix.length);
-        console.log("FILENAME:", fileName); // TODO REMOVE
+        let fileName = req.url.substring((options.uriPrefix || '').length+1);
+        const searchIdx = fileName.indexOf('?');
+        fileName = searchIdx >= 0 ? fileName.substring(0, searchIdx) : fileName;
         const filePath = path.resolve(ROOT, options.srcDir, fileName);
         let width = req.query.w ? parseInt(req.query.w as string || '', 10) : null;
         width = width || 1024;
         let format = req.query.f as string || '';
-        const idx = req.params.fileName.lastIndexOf(".");
+        const idx = fileName.lastIndexOf(".");
         format = (format && format.length > 0) ? format : 
-                ((idx >= 0 && idx < req.params.fileName.length-1) ? req.params.fileName.substring(idx+1) : 'jpg');
+                ((idx >= 0 && idx < fileName.length-1) ? fileName.substring(idx+1) : 'jpg');
 
         optimizer.optimizedImage(filePath, width, format as any).then((info: OptimizedImageInfo) => {
             if(httpCacheSec && httpCacheSec > 0) res.set('Cache-control', 'public, max-age='+httpCacheSec);
             res.set('Content-type', info.mimeType);
             res.send(info.imageData);
-        }).catch((err: any) => { console.error(err); next(); });
+        }).catch((err: any) => {
+            console.error(err);
+            next();
+        });
     };
 };
 export default ImageRequestHandler;
