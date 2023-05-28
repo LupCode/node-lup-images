@@ -44,6 +44,11 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
         format = (format && format.length > 0) ? format : 
                 ((idx >= 0 && idx < fileName.length-1) ? fileName.substring(idx+1) : 'jpg');
 
+        if(!OptimizerSettings.FILE_EXTENSION_TO_MIME_TYPE[format]){
+            next();
+            return;
+        }
+
         optimizer.optimizedImage(filePath, width, format as any).then((info: OptimizedImageInfo) => {
             if(httpCacheSec && httpCacheSec > 0) res.set('Cache-control', 'public, max-age='+httpCacheSec);
             res.set('Content-type', info.mimeType);
