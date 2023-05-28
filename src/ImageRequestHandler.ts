@@ -33,15 +33,15 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
     const httpCacheSec = options.httpCacheTime != null ? options.httpCacheTime || OptimizerSettings.DEFAULT_HTTP_CACHE_SEC : null;
 
     return (req: Request, res: Response, next: NextFunction) => {
+        if(!req.query.f || !req.query.w){ next(); return; }
+
         let fileName = req.url.substring((options.uriPrefix || '').length+1);
         const searchIdx = fileName.indexOf('?');
         fileName = searchIdx >= 0 ? fileName.substring(0, searchIdx) : fileName;
         const filePath = path.resolve(ROOT, options.srcDir, fileName);
-        let width = req.query.w ? parseInt(req.query.w as string || '', 10) : null;
-        width = width || 1024;
-        let format = req.query.f as string || '';
+        const width = parseInt(req.query.w as string || '', 10) || 1024;
         const idx = fileName.lastIndexOf(".");
-        format = (format && format.length > 0) ? format : 
+        const format = ((req.query.f as string).length > 0) ? req.query.f as string : 
                 ((idx >= 0 && idx < fileName.length-1) ? fileName.substring(idx+1) : 'jpg');
 
         if(!OptimizerSettings.FILE_EXTENSION_TO_MIME_TYPE[format]){
