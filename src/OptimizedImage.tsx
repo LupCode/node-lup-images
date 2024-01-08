@@ -11,6 +11,8 @@ export type OptimizedImageProps = {
     draggable?: boolean,
     title?: string,
     loading?: "lazy" | "eager",
+    className?: string,
+    style?: React.CSSProperties,
 
     /** 
      * The image is automatically scaled based on the device pixel ratio (DPR) of the device.
@@ -73,8 +75,9 @@ export function OptimizedImage(props: OptimizedImageProps){
 
     return <picture>
         {sources}
-        <img src={props.src} width={props.width} height={props.height || "auto"} 
-                    alt={props.alt} draggable={props.draggable} title={props.title} loading={props.loading} />
+        <img className={props.className} style={props.style}
+                src={props.src} width={props.width} height={props.height || "auto"} 
+                alt={props.alt} draggable={props.draggable} title={props.title} loading={props.loading} />
     </picture>;
 }
 export default OptimizedImage;
