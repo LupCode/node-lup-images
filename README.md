@@ -6,7 +6,7 @@
 # lup-images
 Node module for optimizing images in web applications.
 
-## Example
+## Example Server
 ```javascript
 const { ImagesRequestHandler } = require('lup-images');
 const express = require('express');
@@ -16,4 +16,8 @@ const app = express();
 app.use('/images/*', ImagesRequestHandler());
 
 app.listen();
+```
+## Example JSX
+```jsx
+<OptimizedImage src="https://picsum.photos/200/300" width={200} height={300} />
 ```
