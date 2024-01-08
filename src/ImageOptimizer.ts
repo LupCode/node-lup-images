@@ -184,4 +184,3 @@ export class ImageOptimizer {
         return info;
     }
 }
-export default ImageOptimizer;

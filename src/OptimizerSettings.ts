@@ -42,4 +42,3 @@ export const OptimizerSettings: {
         "tif": ["avif", "webp", "png"],
     },
 };
-export default OptimizerSettings;

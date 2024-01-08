@@ -59,4 +59,3 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
         });
     };
 };
-export default ImageRequestHandler;

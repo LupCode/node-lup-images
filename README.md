@@ -17,7 +17,16 @@ app.use('/images/*', ImagesRequestHandler());
 
 app.listen();
 ```
+
 ## Example JSX
 ```jsx
 <OptimizedImage src="https://picsum.photos/200/300" width={200} height={300} />
+```
+
+## For NextJS
+To work with NextJS you need to add the following to your `next.config.js`:
+```javascript
+experimental: {
+    serverComponentsExternalPackages: ["sharp"],
+}
 ```

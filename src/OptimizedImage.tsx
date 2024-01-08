@@ -80,4 +80,3 @@ export function OptimizedImage(props: OptimizedImageProps){
                 alt={props.alt} draggable={props.draggable} title={props.title} loading={props.loading} />
     </picture>;
 }
-export default OptimizedImage;
