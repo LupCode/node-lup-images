@@ -1,12 +1,17 @@
 {
   "name": "lup-images",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Optimizes images for web applications",
   "files": [
-    "lib/**/*"
+    "image/**/*",
+    "ImageConverter*.*",
+    "ImageRequestHandler*.*",
+    "ImageStorage*.*",
+    "index*.*",
+    "OptimizerSettings*.*"
   ],
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "jest --config jest.config.json",
     "build": "tsc",

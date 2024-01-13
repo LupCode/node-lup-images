@@ -1,5 +1,5 @@
-import { ImageOptimizer } from '../index';
+import { ImageConverter } from '../index';
 
-test('ImageOptimizer not null', () => {
-  expect(ImageOptimizer).not.toBeNull();
+test('ImageConverter not null', () => {
+  expect(ImageConverter).not.toBeNull();
 });

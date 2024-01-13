@@ -1,4 +1,3 @@
-export * from "./ImageOptimizer";
+export * from "./ImageConverter";
 export * from "./ImageRequestHandler";
-export * from "./OptimizedImage";
 export * from "./OptimizerSettings";
