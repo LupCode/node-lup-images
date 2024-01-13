@@ -46,7 +46,7 @@ function OptimizedImage(props) {
     // fetchPriority is not supported by TSX yet
     var tags = {};
     if (props.fetchPriority)
-        tags.fetchpriority = props.fetchPriority;
+        tags.fetchPriority = props.fetchPriority;
     return react_1.default.createElement("picture", null,
         sources,
         react_1.default.createElement("img", __assign({ className: props.className, style: props.style }, tags, { src: props.src, width: props.width, height: props.height || "auto", alt: props.alt, draggable: props.draggable, title: props.title, loading: props.loading })));

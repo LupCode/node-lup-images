@@ -78,7 +78,7 @@ export function OptimizedImage(props: OptimizedImageProps){
 
     // fetchPriority is not supported by TSX yet
     const tags: any = {};
-    if(props.fetchPriority) tags.fetchpriority = props.fetchPriority;
+    if(props.fetchPriority) tags.fetchPriority = props.fetchPriority;
 
     return <picture>
         {sources}
