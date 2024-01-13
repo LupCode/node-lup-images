@@ -65,7 +65,6 @@ export function OptimizedImage(props: OptimizedImageProps){
     const sources: React.ReactNode[] = [];
     let w = width || 0;
     while(w >= minWidth) {
-        console.log(w, ' -> ', w / scaleFactor, ' -> ', Math.round(w / scaleFactor)); // TODO REMOVE
         const nextW = Math.round(w / scaleFactor);
 
         const isLast = nextW < minWidth;

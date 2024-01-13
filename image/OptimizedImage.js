@@ -35,7 +35,6 @@ function OptimizedImage(props) {
     var sources = [];
     var w = width || 0;
     while (w >= minWidth) {
-        console.log(w, ' -> ', w / scaleFactor, ' -> ', Math.round(w / scaleFactor)); // TODO REMOVE
         var nextW = Math.round(w / scaleFactor);
         var isLast = nextW < minWidth;
         for (var _i = 0, fileExtensions_1 = fileExtensions; _i < fileExtensions_1.length; _i++) {
