@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ImageRequestHandler = void 0;
+exports.PrerenderImages = exports.ImageRequestHandler = void 0;
 var path_1 = __importDefault(require("path"));
 var lup_root_1 = require("lup-root");
 var ImageConverter_1 = require("./ImageConverter");
@@ -135,3 +135,25 @@ function ImageRequestHandler(options) {
 }
 exports.ImageRequestHandler = ImageRequestHandler;
 ;
+/**
+ * Takes same input as ImageRequestHandler but pre-renders all images.
+ * @param options Options of request handler (see ImageRequestHandler).
+ * @returns Promise that resolves when pre-rendering is finished
+ */
+function PrerenderImages(options) {
+    return __awaiter(this, void 0, void 0, function () {
+        var optimizer, prerenderStorage;
+        return __generator(this, function (_a) {
+            optimizer = new ImageConverter_1.ImageConverter(options);
+            prerenderStorage = options.prerenderOutputDir !== '' ? new ImageStorage_1.ImageDirectoryStorage({
+                dirPath: options.prerenderOutputDir || index_1.OptimizerSettings.DEFAULT_PREDENDER_OUTPUT_DIRECTORY,
+            }) : new ImageStorage_1.ImageInPlaceStorage();
+            return [2 /*return*/, optimizer.prerender(prerenderStorage, options.srcDir, {
+                    recursive: options.prerender,
+                    scaleFactor: options.scaleFactor,
+                    message: options.prerenderMessage,
+                })];
+        });
+    });
+}
+exports.PrerenderImages = PrerenderImages;

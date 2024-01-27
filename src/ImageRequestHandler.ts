@@ -136,3 +136,22 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
         }
     };
 };
+
+
+/**
+ * Takes same input as ImageRequestHandler but pre-renders all images.
+ * @param options Options of request handler (see ImageRequestHandler).
+ * @returns Promise that resolves when pre-rendering is finished
+ */
+export async function PrerenderImages(options: ImageRequestHandlerOptions): Promise<void> {
+    const optimizer = new ImageConverter(options);
+    const prerenderStorage = options.prerenderOutputDir !== '' ? new ImageDirectoryStorage({
+        dirPath: options.prerenderOutputDir || OptimizerSettings.DEFAULT_PREDENDER_OUTPUT_DIRECTORY,
+    }) : new ImageInPlaceStorage();
+
+    return optimizer.prerender(prerenderStorage, options.srcDir, {
+        recursive: options.prerender,
+        scaleFactor: options.scaleFactor,
+        message: options.prerenderMessage,
+    });
+}

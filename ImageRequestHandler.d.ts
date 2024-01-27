@@ -51,3 +51,9 @@ export type ImageRequestHandlerOptions = ImageConverterOptions & {
  * @returns Request handler that can be passed e.g. to express
  */
 export declare function ImageRequestHandler(options: ImageRequestHandlerOptions): (req: Request, res: Response, next: NextFunction) => Promise<void>;
+/**
+ * Takes same input as ImageRequestHandler but pre-renders all images.
+ * @param options Options of request handler (see ImageRequestHandler).
+ * @returns Promise that resolves when pre-rendering is finished
+ */
+export declare function PrerenderImages(options: ImageRequestHandlerOptions): Promise<void>;
