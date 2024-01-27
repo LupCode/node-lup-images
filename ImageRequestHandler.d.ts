@@ -1,12 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { ImageConverterOptions } from "./ImageConverter";
-export type ImageRequestHandlerOptions = ImageConverterOptions & {
-    /** Path relative to project root where images are located (subdirectories starting with underscore '_' won't be optimized) */
-    srcDir: string;
+export type ImageRequestHandlerOptions = PrerenderImagesOptions & {
     /** URI prefix */
     uriPrefix: string;
-    /** Factor to scale images by (multiplier applied to width and height for each step) [Defaults to 1.5] */
-    scaleFactor?: number;
     /** Pulblic HTTP cache time in seconds.
      * Can be undefined or null to disable public HTTP caching.
      * Defaults to 3600 (1 hour).
@@ -27,6 +23,21 @@ export type ImageRequestHandlerOptions = ImageConverterOptions & {
      * Defaults to true.
      */
     prerender?: boolean;
+};
+/**
+ * Returns a request handler (req, res, next) => void that will serve optimized images.
+ * It supports different search parameters:
+ * - w: width in pixels of available space for image (default: 1024)
+ * - f: format of returned image (jpg, png, webp, etc.)
+ * @param options Options for image optimization
+ * @returns Request handler that can be passed e.g. to express
+ */
+export declare function ImageRequestHandler(options: ImageRequestHandlerOptions): (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export type PrerenderImagesOptions = ImageConverterOptions & {
+    /** Path relative to project root where images are located (subdirectories starting with underscore '_' won't be optimized) */
+    srcDir: string;
+    /** Factor to scale images by (multiplier applied to width and height for each step) [Defaults to 1.5] */
+    scaleFactor?: number;
     /** Path relative to project root where pre-rendered images should be stored.
      * If empty, images will be pre-rendered in place where original image is locaded (uses a subdirectory per original image).
      * Defaults to "./.prerendered"
@@ -43,17 +54,8 @@ export type ImageRequestHandlerOptions = ImageConverterOptions & {
     exludePrefix?: string[];
 };
 /**
- * Returns a request handler (req, res, next) => void that will serve optimized images.
- * It supports different search parameters:
- * - w: width in pixels of available space for image (default: 1024)
- * - f: format of returned image (jpg, png, webp, etc.)
- * @param options Options for image optimization
- * @returns Request handler that can be passed e.g. to express
- */
-export declare function ImageRequestHandler(options: ImageRequestHandlerOptions): (req: Request, res: Response, next: NextFunction) => Promise<void>;
-/**
  * Takes same input as ImageRequestHandler but pre-renders all images.
  * @param options Options of request handler (see ImageRequestHandler).
  * @returns Promise that resolves when pre-rendering is finished
  */
-export declare function PrerenderImages(options: ImageRequestHandlerOptions): Promise<void>;
+export declare function PrerenderImages(options: PrerenderImagesOptions): Promise<void>;

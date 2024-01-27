@@ -149,9 +149,10 @@ function PrerenderImages(options) {
                 dirPath: options.prerenderOutputDir || index_1.OptimizerSettings.DEFAULT_PREDENDER_OUTPUT_DIRECTORY,
             }) : new ImageStorage_1.ImageInPlaceStorage();
             return [2 /*return*/, optimizer.prerender(prerenderStorage, options.srcDir, {
-                    recursive: options.prerender,
+                    recursive: true,
                     scaleFactor: options.scaleFactor,
                     message: options.prerenderMessage,
+                    exlucePrefixes: options.exludePrefix,
                 })];
         });
     });

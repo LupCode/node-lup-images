@@ -6,16 +6,10 @@ import { OptimizerSettings } from "./index";
 import { ImageCacheStorage, ImageDirectoryStorage, ImageInPlaceStorage } from "./ImageStorage";
 
 
-export type ImageRequestHandlerOptions = ImageConverterOptions & {
-
-    /** Path relative to project root where images are located (subdirectories starting with underscore '_' won't be optimized) */
-    srcDir: string,
+export type ImageRequestHandlerOptions = PrerenderImagesOptions & {
   
     /** URI prefix */
     uriPrefix: string,
-
-    /** Factor to scale images by (multiplier applied to width and height for each step) [Defaults to 1.5] */
-    scaleFactor?: number,
 
     /** Pulblic HTTP cache time in seconds.
      * Can be undefined or null to disable public HTTP caching.
@@ -40,23 +34,6 @@ export type ImageRequestHandlerOptions = ImageConverterOptions & {
      * Defaults to true.
      */
     prerender?: boolean,
-
-    /** Path relative to project root where pre-rendered images should be stored.
-     * If empty, images will be pre-rendered in place where original image is locaded (uses a subdirectory per original image).
-     * Defaults to "./.prerendered"
-     */
-    prerenderOutputDir?: string,
-
-    /** If true, the start and end of the pre-rendering process will be logged (because takes up high hardware utilization).
-     * Defaults to true.
-     */
-    prerenderMessage?: boolean,
-
-    /** List of path prefixes starting inside srcDir that should not be optimized.
-     * Subdirectories starting with underscore '_' won't be optimized.
-     * Defaults to ["./favicons"].
-     */
-    exludePrefix?: string[],
 };
 
 /**
@@ -138,20 +115,50 @@ export function ImageRequestHandler(options : ImageRequestHandlerOptions){
 };
 
 
+
+
+export type PrerenderImagesOptions = ImageConverterOptions & {
+
+    /** Path relative to project root where images are located (subdirectories starting with underscore '_' won't be optimized) */
+    srcDir: string,
+
+    /** Factor to scale images by (multiplier applied to width and height for each step) [Defaults to 1.5] */
+    scaleFactor?: number,
+
+    /** Path relative to project root where pre-rendered images should be stored.
+     * If empty, images will be pre-rendered in place where original image is locaded (uses a subdirectory per original image).
+     * Defaults to "./.prerendered"
+     */
+    prerenderOutputDir?: string,
+
+    /** If true, the start and end of the pre-rendering process will be logged (because takes up high hardware utilization).
+     * Defaults to true.
+     */
+    prerenderMessage?: boolean,
+
+    /** List of path prefixes starting inside srcDir that should not be optimized.
+     * Subdirectories starting with underscore '_' won't be optimized.
+     * Defaults to ["./favicons"].
+     */
+    exludePrefix?: string[],
+};
+
+
 /**
  * Takes same input as ImageRequestHandler but pre-renders all images.
  * @param options Options of request handler (see ImageRequestHandler).
  * @returns Promise that resolves when pre-rendering is finished
  */
-export async function PrerenderImages(options: ImageRequestHandlerOptions): Promise<void> {
+export async function PrerenderImages(options: PrerenderImagesOptions): Promise<void> {
     const optimizer = new ImageConverter(options);
     const prerenderStorage = options.prerenderOutputDir !== '' ? new ImageDirectoryStorage({
         dirPath: options.prerenderOutputDir || OptimizerSettings.DEFAULT_PREDENDER_OUTPUT_DIRECTORY,
     }) : new ImageInPlaceStorage();
 
     return optimizer.prerender(prerenderStorage, options.srcDir, {
-        recursive: options.prerender,
+        recursive: true,
         scaleFactor: options.scaleFactor,
         message: options.prerenderMessage,
+        exlucePrefixes: options.exludePrefix,
     });
 }
