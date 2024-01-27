@@ -30,3 +30,20 @@ experimental: {
     serverComponentsExternalPackages: ["sharp"],
 }
 ```
+
+
+## Prerender Images before Deployment
+Images can also be prerendered before deployment e.g. inside of a CI/CD pipeline.
+Create a file that contains the following code:
+```typescript
+import { PrerenderImages } from 'lup-images';
+
+// this wrapper is needed if you are in the main file of a node project
+(async () => {
+
+    // prerender images (provide same options as in the request handler)
+    await PrerenderImages({ ... });
+
+})();
+````
+In the CI/CD pipeline or wherever you want to prerender the images, run the file using node.
